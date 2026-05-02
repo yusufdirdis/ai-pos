@@ -1,77 +1,97 @@
 "use client";
 
-import { motion } from 'framer-motion';
-import { RefreshCw, CheckCircle2, Box } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { RefreshCw } from 'lucide-react';
 
-export default function MenuDashboard({ isRefreshing }: { isRefreshing: boolean }) {
-  // Mock data for demonstration of synced state
-  const recentItems = [
-    { id: 1, name: "Spicy Chicken Sandwich", price: "$8.99", status: "Synced", platforms: ["Square", "Clover"] },
-    { id: 2, name: "Large Fries", price: "$3.49", status: "Synced", platforms: ["Square"] }
-  ];
+export default function MenuDashboard({ isRefreshing, activePlatform }: { isRefreshing: boolean, activePlatform: string | null }) {
+  const [items, setItems] = useState<any[]>([]);
+
+  useEffect(() => { fetchItems(); }, [isRefreshing, activePlatform]);
+
+  const fetchItems = async () => {
+    try {
+      const url = activePlatform 
+        ? `http://localhost:8000/api/items/menu?platform=${activePlatform}` 
+        : `http://localhost:8000/api/items/menu`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setItems(data);
+    } catch (e) { console.error(e); }
+  };
 
   return (
-    <div className="glass-panel rounded-2xl p-6 h-[600px] flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-xl font-semibold text-white">Live Menu Sync</h2>
-          <p className="text-sm text-slate-400">Central Database Overview</p>
-        </div>
-        <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-          <RefreshCw className={`w-5 h-5 text-slate-300 ${isRefreshing ? 'animate-spin text-blue-400' : ''}`} />
-        </button>
-      </div>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Item list */}
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        {items.length === 0 && !isRefreshing && (
+          <div style={{ padding: '64px 48px', fontSize: 12, color: '#333', letterSpacing: '0.05em' }}>
+            No items. Ask the AI to add something.
+          </div>
+        )}
 
-      <div className="flex-1 overflow-y-auto space-y-3">
-        {recentItems.map((item, i) => (
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.1 }}
-            key={item.id} 
-            className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/10 transition-colors"
+        {items.map((item, i) => (
+          <div key={item.id} style={{
+            padding: '20px 48px',
+            borderBottom: '1px solid #1a1a1a',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 20,
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#0a0a0a')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                <Box className="w-5 h-5 text-indigo-400" />
+            {/* Image or index */}
+            {item.image ? (
+              <img src={item.image} alt={item.name}
+                style={{ width: 44, height: 44, objectFit: 'cover', flexShrink: 0 }} />
+            ) : (
+              <div style={{
+                width: 44, height: 44, background: '#111', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, color: '#333', fontWeight: 500
+              }}>
+                {String(i + 1).padStart(2, '0')}
               </div>
-              <div>
-                <h3 className="text-white font-medium">{item.name}</h3>
-                <p className="text-xs text-emerald-400">{item.price}</p>
+            )}
+
+            {/* Name + price */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, color: '#fff', letterSpacing: '0.01em', marginBottom: 4 }}>
+                {item.name}
+              </div>
+              <div style={{ fontSize: 11, color: '#555', letterSpacing: '0.05em' }}>
+                {item.price}
               </div>
             </div>
-            
-            <div className="flex flex-col items-end gap-1">
-              <div className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-md">
-                <CheckCircle2 className="w-3 h-3" />
-                {item.status}
-              </div>
-              <div className="flex gap-1">
-                {item.platforms.map(p => (
-                  <span key={p} className="text-[10px] text-slate-400 bg-black/30 px-1.5 py-0.5 rounded">
+
+            {/* Platforms + status */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {item.platforms?.map((p: string) => (
+                  <span key={p} style={{
+                    fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase',
+                    color: '#555', border: '1px solid #222', padding: '2px 6px',
+                  }}>
                     {p}
                   </span>
                 ))}
               </div>
+              <span style={{
+                fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase',
+                color: item.status === 'Synced' ? '#2ecc71' : item.status === 'Failed' ? '#e74c3c' : '#f39c12',
+              }}>
+                {item.status}
+              </span>
             </div>
-          </motion.div>
+          </div>
         ))}
-        
+
         {isRefreshing && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex justify-center items-center"
-          >
-             <span className="text-sm text-blue-400 animate-pulse flex items-center gap-2">
-               <RefreshCw className="w-4 h-4 animate-spin" /> Fetching recent DB updates...
-             </span>
-          </motion.div>
+          <div style={{ padding: '20px 48px', fontSize: 11, color: '#444', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            Syncing...
+          </div>
         )}
-        
-        <div className="p-8 text-center text-slate-500 text-sm border border-dashed border-white/10 rounded-xl mt-4">
-          Use the AI Chatbot to add or update menu items. They will appear here when synced.
-        </div>
       </div>
     </div>
   );
