@@ -13,41 +13,24 @@ async def chat_with_agent(
     background_tasks: BackgroundTasks,
     message: str = Form(...),
     platform_filter: str = Form(None),
+    history: str = Form(""),
     image: UploadFile = File(None),
     db: Session = Depends(get_db)
 ):
     image_base64 = None
     if image:
         contents = await image.read()
-        
-        # Optimize image for AI speed
-        from io import BytesIO
-        from PIL import Image
-        img = Image.open(BytesIO(contents))
-        if img.mode in ('RGBA', 'P'):
-            img = img.convert('RGB')
-        
-        # Resize to max 512x512 to massively speed up Ollama Vision
-        img.thumbnail((512, 512))
-        buffer = BytesIO()
-        img.save(buffer, format="JPEG", quality=85)
-        optimized_contents = buffer.getvalue()
-        
-        image_base64 = base64.b64encode(optimized_contents).decode('utf-8')
+        # Pass the raw image directly to Gemini (it handles sizing natively)
+        image_base64 = base64.b64encode(contents).decode('utf-8')
     try:
-        # TODO: Pass platform_filter to run_agent to filter RAG context
-        result = await run_agent(db, message, image_base64, background_tasks)
+        result = await run_agent(db, message, image_base64, background_tasks, history)
         return {"reply": result}
     except RuntimeError as e:
         # These are our own descriptive errors (e.g. Ollama not running)
         return {"reply": f"⚠️ {str(e)}"}
     except Exception as e:
         error_msg = str(e)
-        if "insufficient_quota" in error_msg or "429" in error_msg:
-            return {"reply": "⚠️ OpenAI quota exceeded. Switch to Ollama (free) by setting AI_PROVIDER=ollama in .env"}
-        if "GEMINI_API_KEY" in error_msg or "API_KEY_INVALID" in error_msg:
-            return {"reply": "⚠️ Invalid Gemini API key. Check your GEMINI_API_KEY in .env"}
-        return {"reply": f"⚠️ Backend error: {error_msg[:200]}"}
+        return {"reply": f"⚠️ Backend error: {error_msg}"}
 
 from db.models import MenuItem, PlatformItemMapping
 
@@ -80,3 +63,101 @@ def get_menu(platform: str = None, db: Session = Depends(get_db)):
             "image": item.image_url
         })
     return result
+
+
+@router.post("/pull-menu")
+def pull_menu_from_platform(platform: str = Form("ubereats"), db: Session = Depends(get_db)):
+    """
+    Pull the full menu from an external platform (Uber Eats, etc.) 
+    and import all items into our central database.
+    """
+    from core.adapters.ubereats import UberEatsAdapter
+    from agent.workflow import AgentWorkflow
+    
+    restaurant_id = 1  # MVP hardcoded
+    
+    if platform.lower() == "ubereats":
+        adapter = UberEatsAdapter(credentials_arn="env")
+    else:
+        return {"error": f"Platform '{platform}' not yet supported for pull"}
+    
+    # Pull the menu from the platform
+    external_items = adapter.pull_menu()
+    
+    workflow = AgentWorkflow(db)
+    imported = 0
+    skipped = 0
+    
+    for ext_item in external_items:
+        # Check if we already have this item mapped
+        existing_mapping = db.query(PlatformItemMapping).filter_by(
+            platform_name=platform.lower(),
+            external_item_id=ext_item["external_id"]
+        ).first()
+        
+        if existing_mapping:
+            # Item already imported — update it
+            item = db.query(MenuItem).filter_by(id=existing_mapping.menu_item_id).first()
+            if item:
+                item.name = ext_item["name"]
+                item.description = ext_item["description"]
+                item.base_price = ext_item["base_price"]
+                if ext_item.get("image_url"):
+                    item.image_url = ext_item["image_url"]
+                skipped += 1
+            continue
+        
+        # Create new item in our DB
+        embedding = workflow.embed_text(f"{ext_item['name']} {ext_item['description']}")
+        new_item = MenuItem(
+            restaurant_id=restaurant_id,
+            name=ext_item["name"],
+            description=ext_item["description"],
+            base_price=ext_item["base_price"],
+            image_url=ext_item.get("image_url") or None,
+            embedding=embedding,
+            is_active=ext_item.get("is_active", True),
+        )
+        db.add(new_item)
+        db.flush()  # Get the ID
+        
+        # Create the platform mapping
+        mapping = PlatformItemMapping(
+            menu_item_id=new_item.id,
+            platform_name=platform.lower(),
+            external_item_id=ext_item["external_id"],
+            last_sync_status="success",
+        )
+        db.add(mapping)
+        imported += 1
+    
+    db.commit()
+    return {
+        "status": "success",
+        "imported": imported,
+        "updated": skipped,
+        "total": len(external_items),
+        "platform": platform,
+    }
+
+
+@router.get("/platforms")
+def get_platforms():
+    """Return available platforms and their current mode (mock/live)."""
+    import os
+    return {
+        "platforms": [
+            {
+                "name": "ubereats",
+                "display_name": "Uber Eats",
+                "mode": os.getenv("UBEREATS_MODE", "mock"),
+                "has_credentials": bool(os.getenv("UBEREATS_CLIENT_ID")),
+            },
+            {
+                "name": "square",
+                "display_name": "Square",
+                "mode": "sandbox",
+                "has_credentials": bool(os.getenv("SQUARE_SANDBOX_TOKEN")),
+            },
+        ]
+    }

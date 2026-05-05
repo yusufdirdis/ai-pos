@@ -58,39 +58,31 @@ export default function Home() {
 
   if (!session) {
     return (
-      <div style={{
-        height: '100vh',
-        background: '#000',
-        color: '#fff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column'
-      }}>
-        <div style={{ width: '100%', maxWidth: 320 }}>
-          <h1 style={{ fontSize: 24, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 32, fontWeight: 300 }}>
+      <div className="h-screen bg-black text-white flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-[320px]">
+          <h1 className="text-2xl tracking-[0.1em] uppercase mb-8 font-light">
             MenuFlow
           </h1>
-          <form style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <form className="flex flex-col gap-4">
             <input
               type="email"
               placeholder="EMAIL"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              style={{ background: 'transparent', border: '1px solid #333', color: '#fff', padding: '12px 16px', fontSize: 12, letterSpacing: '0.1em' }}
+              className="bg-transparent border border-[#333] text-white px-4 py-3 text-xs tracking-[0.1em] focus:outline-none focus:border-[#666] transition-colors rounded-none w-full"
             />
             <input
               type="password"
               placeholder="PASSWORD"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              style={{ background: 'transparent', border: '1px solid #333', color: '#fff', padding: '12px 16px', fontSize: 12, letterSpacing: '0.1em' }}
+              className="bg-transparent border border-[#333] text-white px-4 py-3 text-xs tracking-[0.1em] focus:outline-none focus:border-[#666] transition-colors rounded-none w-full"
             />
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button onClick={handleLogin} disabled={loading} style={{ flex: 1, background: '#fff', color: '#000', border: 'none', padding: '12px', fontSize: 11, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <div className="flex gap-2 mt-2">
+              <button onClick={handleLogin} disabled={loading} className="flex-1 bg-white text-black border-none p-3 text-[11px] uppercase tracking-[0.1em] cursor-pointer disabled:opacity-50">
                 Login
               </button>
-              <button onClick={handleSignUp} disabled={loading} style={{ flex: 1, background: 'transparent', color: '#fff', border: '1px solid #333', padding: '12px', fontSize: 11, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              <button onClick={handleSignUp} disabled={loading} className="flex-1 bg-transparent text-white border border-[#333] p-3 text-[11px] uppercase tracking-[0.1em] cursor-pointer disabled:opacity-50">
                 Sign Up
               </button>
             </div>
@@ -106,65 +98,44 @@ export default function Home() {
   };
 
   return (
-    <div style={{
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      background: '#000',
-      color: '#fff',
-      overflow: 'hidden',
-    }}>
+    <div className="h-screen flex flex-col bg-black text-white overflow-hidden">
       {/* Top bar */}
-      <header style={{
-        borderBottom: '1px solid #1a1a1a',
-        padding: '14px 48px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexShrink: 0,
-      }}>
-        <span style={{ fontSize: 16, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#fff', fontWeight: 400 }}>
+      <header className="border-b border-[#1a1a1a] px-4 py-3 md:px-16 md:py-5 flex items-center justify-between shrink-0">
+        <span className="text-sm md:text-lg tracking-[0.3em] uppercase text-white font-light">
           MenuFlow
         </span>
-        <div style={{ position: 'relative' }}>
+        <div className="relative">
           <button 
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            style={{ 
-              background: 'none', border: '1px solid #333', borderRadius: '50%', width: 32, height: 32, 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' 
-            }}
+            className="bg-transparent border border-[#333] rounded-full w-8 h-8 md:w-9 md:h-9 flex items-center justify-center cursor-pointer text-white hover:bg-[#111] transition-colors"
           >
             <User size={14} />
           </button>
           
           {showProfileMenu && (
-            <div style={{ 
-              position: 'absolute', top: 40, right: 0, width: 160, 
-              background: '#000', border: '1px solid #333', 
-              display: 'flex', flexDirection: 'column', zIndex: 50 
-            }}>
-              <button style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid #1a1a1a', padding: '12px 16px', textAlign: 'left', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }} onClick={() => { setShowProfileMenu(false); setShowDashboard(true); }}>Dashboard</button>
-              <button style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid #1a1a1a', padding: '12px 16px', textAlign: 'left', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }} onClick={() => setShowProfileMenu(false)}>Settings</button>
-              <button onClick={() => { setShowProfileMenu(false); handleLogout(); }} style={{ background: 'transparent', color: '#e74c3c', border: 'none', padding: '12px 16px', textAlign: 'left', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>Logout</button>
+            <div className="absolute top-10 right-0 w-40 bg-black border border-[#333] flex flex-col z-50">
+              <button className="bg-transparent text-white border-none border-b border-[#1a1a1a] px-4 py-3 text-left text-[10px] tracking-[0.1em] uppercase cursor-pointer hover:bg-[#111]" onClick={() => { setShowProfileMenu(false); setShowDashboard(true); }}>Dashboard</button>
+              <button className="bg-transparent text-white border-none border-b border-[#1a1a1a] px-4 py-3 text-left text-[10px] tracking-[0.1em] uppercase cursor-pointer hover:bg-[#111]" onClick={() => setShowProfileMenu(false)}>Settings</button>
+              <button onClick={() => { setShowProfileMenu(false); handleLogout(); }} className="bg-transparent text-[#e74c3c] border-none px-4 py-3 text-left text-[10px] tracking-[0.1em] uppercase cursor-pointer hover:bg-[#111]">Logout</button>
             </div>
           )}
         </div>
       </header>
 
-      {/* Main columns — fill remaining height */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', flex: 1, overflow: 'hidden' }}>
+      {/* Main columns — stack on mobile, side-by-side on md+ */}
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Left — Chat */}
-        <div style={{ borderRight: '1px solid #1a1a1a', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ padding: '12px 48px', borderBottom: '1px solid #1a1a1a', flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
-            <span style={{ fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#ccc', fontWeight: 500 }}>Chat</span>
+        <div className="flex-1 md:w-1/2 border-b md:border-b-0 md:border-r border-[#1a1a1a] flex flex-col overflow-hidden min-h-0">
+          <div className="px-4 py-2 md:px-12 md:py-4 border-b border-[#1a1a1a] shrink-0 flex justify-center bg-[#050505]">
+            <span className="text-[10px] md:text-[12px] tracking-[0.25em] uppercase text-[#ccc] font-medium">Chat</span>
           </div>
           <ChatBox onMenuUpdate={handleMenuUpdate} activePlatform={activePlatform} setActivePlatform={setActivePlatform} />
         </div>
 
         {/* Right — Dashboard */}
-        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ padding: '12px 48px', borderBottom: '1px solid #1a1a1a', flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
-            <span style={{ fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#ccc', fontWeight: 500 }}>Menu</span>
+        <div className="flex-1 md:w-1/2 flex flex-col overflow-hidden min-h-0">
+          <div className="px-4 py-2 md:px-12 md:py-4 border-b border-[#1a1a1a] shrink-0 flex justify-center bg-[#050505]">
+            <span className="text-[10px] md:text-[12px] tracking-[0.25em] uppercase text-[#ccc] font-medium">Menu</span>
           </div>
           <MenuDashboard isRefreshing={isRefreshing} activePlatform={activePlatform} />
         </div>

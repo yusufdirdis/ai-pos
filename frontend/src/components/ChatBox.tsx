@@ -49,6 +49,9 @@ export default function ChatBox({ onMenuUpdate, activePlatform, setActivePlatfor
       formData.append('message', userMsg || 'Analyze this image');
       if (activePlatform) formData.append('platform_filter', activePlatform);
       if (selectedFile) formData.append('image', selectedFile);
+      // Send last 6 messages as conversation history for context
+      const history = messages.slice(-6).map(m => `${m.role}: ${m.content}`).join('\n');
+      formData.append('history', history);
 
       const res = await fetch('http://localhost:8000/api/items/chat', { method: 'POST', body: formData });
       const data = await res.json();
@@ -66,79 +69,68 @@ export default function ChatBox({ onMenuUpdate, activePlatform, setActivePlatfor
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '32px 48px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div className="flex-1 overflow-y-auto px-4 py-4 md:px-12 md:py-8 flex flex-col gap-4 md:gap-6">
         {messages.map((msg, i) => (
-          <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'assistant' && (
-              <div style={{ marginRight: 12, marginTop: 2 }}>
-                <span style={{ fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#444' }}>AI</span>
+              <div className="mr-3 mt-1 shrink-0">
+                <span className="text-[9px] tracking-[0.15em] uppercase text-[#444]">AI</span>
               </div>
             )}
-            <div style={{
-              maxWidth: '72%',
-              fontSize: 13,
-              lineHeight: 1.65,
-              color: msg.role === 'user' ? '#000' : '#ccc',
-              background: msg.role === 'user' ? '#fff' : 'transparent',
-              padding: msg.role === 'user' ? '10px 16px' : '0',
-              letterSpacing: '0.01em',
-            }}>
+            <div className={`max-w-[85%] md:max-w-[72%] text-[13px] leading-relaxed tracking-[0.01em] ${
+              msg.role === 'user' ? 'text-black bg-white px-4 py-2.5' : 'text-[#ccc] bg-transparent p-0'
+            }`}>
               {msg.content}
             </div>
           </div>
         ))}
 
         {isLoading && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#444', marginRight: 4 }}>AI</span>
-            <Loader2 size={12} style={{ animation: 'spin 1s linear infinite', color: '#555' }} />
-            <span style={{ fontSize: 12, color: '#444', letterSpacing: '0.05em' }}>Processing...</span>
+          <div className="flex items-center gap-2.5">
+            <span className="text-[9px] tracking-[0.15em] uppercase text-[#444] mr-1">AI</span>
+            <Loader2 size={12} className="animate-spin text-[#555]" />
+            <span className="text-[12px] text-[#444] tracking-[0.05em]">Processing...</span>
           </div>
         )}
         <div ref={endRef} />
       </div>
 
       {/* Input area */}
-      <div style={{ borderTop: '1px solid #1a1a1a', padding: '20px 48px' }}>
+      <div className="border-t border-[#1a1a1a] px-4 py-4 md:px-16 md:py-7 shrink-0 bg-black">
         
         {/* Filters */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+        <div className="flex gap-2 md:gap-3 mb-4 overflow-x-auto no-scrollbar pb-1">
           <button 
             onClick={() => setActivePlatform(null)}
-            style={{ fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px', border: '1px solid #333', background: activePlatform === null ? '#fff' : 'transparent', color: activePlatform === null ? '#000' : '#888', cursor: 'pointer' }}>
+            className={`shrink-0 text-[9px] tracking-[0.1em] uppercase px-2 py-1 border border-[#333] cursor-pointer transition-colors ${activePlatform === null ? 'bg-white text-black' : 'bg-transparent text-[#888]'}`}>
             All
           </button>
           {['Square', 'UberEats', 'DoorDash'].map(p => (
             <button 
               key={p} onClick={() => setActivePlatform(p)}
-              style={{ fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px', border: '1px solid #333', background: activePlatform === p ? '#fff' : 'transparent', color: activePlatform === p ? '#000' : '#888', cursor: 'pointer' }}>
+              className={`shrink-0 text-[9px] tracking-[0.1em] uppercase px-2 py-1 border border-[#333] cursor-pointer transition-colors ${activePlatform === p ? 'bg-white text-black' : 'bg-transparent text-[#888]'}`}>
               {p}
             </button>
           ))}
-          <button style={{ marginLeft: 'auto', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 8px', border: '1px dotted #333', background: 'transparent', color: '#555', cursor: 'help' }} title="CRM & Data Predictor (Coming Soon)">
+          <button className="shrink-0 ml-auto text-[9px] tracking-[0.1em] uppercase px-2 py-1 border border-dotted border-[#333] bg-transparent text-[#555] cursor-help" title="CRM & Data Predictor (Coming Soon)">
             Data CRM
           </button>
         </div>
+
         {previewUrl && (
-          <div style={{ marginBottom: 12, position: 'relative', display: 'inline-block' }}>
-            <img src={previewUrl} alt="Preview" style={{ width: 48, height: 48, objectFit: 'cover' }} />
-            <button onClick={clearFile} style={{
-              position: 'absolute', top: -6, right: -6,
-              background: '#fff', border: 'none', cursor: 'pointer',
-              width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
+          <div className="mb-3 relative inline-block">
+            <img src={previewUrl} alt="Preview" className="w-12 h-12 object-cover" />
+            <button onClick={clearFile} className="absolute -top-1.5 -right-1.5 bg-white border-none cursor-pointer w-4 h-4 flex items-center justify-center rounded-none">
               <X size={10} color="#000" />
             </button>
           </div>
         )}
-        <form onSubmit={e => { e.preventDefault(); sendMessage(); }}
-          style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+
+        <form onSubmit={e => { e.preventDefault(); sendMessage(); }} className="flex gap-3 md:gap-4 items-center">
           <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
-          <button type="button" onClick={() => fileInputRef.current?.click()}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#444', display: 'flex', alignItems: 'center' }}
-            title="Attach image">
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-none border-none cursor-pointer p-0 text-[#444] flex items-center shrink-0" title="Attach image">
             <ImagePlus size={16} />
           </button>
           <input
@@ -146,17 +138,9 @@ export default function ChatBox({ onMenuUpdate, activePlatform, setActivePlatfor
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder="e.g. Remove the spicy chicken sandwich..."
-            style={{
-              flex: 1, background: 'none', border: 'none', borderBottom: '1px solid #2a2a2a',
-              color: '#fff', fontSize: 13, padding: '8px 0', outline: 'none',
-              letterSpacing: '0.01em',
-            }}
+            className="flex-1 bg-transparent border-none border-b border-[#2a2a2a] text-white text-[13px] py-2 outline-none tracking-[0.01em] min-w-0 w-full rounded-none"
           />
-          <button type="submit" disabled={isLoading || (!input.trim() && !selectedFile)}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer', color: isLoading ? '#333' : '#fff',
-              display: 'flex', alignItems: 'center', padding: 0,
-            }}>
+          <button type="submit" disabled={isLoading || (!input.trim() && !selectedFile)} className={`bg-none border-none cursor-pointer flex items-center p-0 shrink-0 ${isLoading ? 'text-[#333]' : 'text-white'}`}>
             <Send size={14} />
           </button>
         </form>

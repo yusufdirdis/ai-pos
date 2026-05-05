@@ -27,70 +27,65 @@ export default function StoreManager({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '100%', maxWidth: 600, background: '#0a0a0a', border: '1px solid #222', display: 'flex', flexDirection: 'column', maxHeight: '80vh' }}>
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-[600px] bg-[#0a0a0a] border border-[#222] flex flex-col max-h-[90vh]">
         
         {/* Header */}
-        <div style={{ padding: '24px 32px', borderBottom: '1px solid #222', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#fff' }}>Store Dashboard</span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer' }}><X size={16} /></button>
+        <div className="px-6 py-5 border-b border-[#222] flex justify-between items-center shrink-0">
+          <span className="text-[12px] tracking-[0.2em] uppercase text-white font-medium">Store Dashboard</span>
+          <button onClick={onClose} className="bg-transparent border-none text-[#555] cursor-pointer p-1 hover:text-white transition-colors"><X size={16} /></button>
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: 32 }}>
+        <div className="flex-1 overflow-y-auto p-6 md:p-8">
           {!isAdding ? (
             <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                <span style={{ fontSize: 10, color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Connected POS Systems</span>
+              <div className="flex justify-between items-center mb-6">
+                <span className="text-[10px] text-[#666] uppercase tracking-[0.1em]">Connected POS Systems</span>
                 <button 
                   onClick={() => setIsAdding(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', color: '#000', border: 'none', padding: '8px 16px', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', cursor: 'pointer' }}
+                  className="flex items-center gap-2 bg-white text-black border-none px-4 py-2 text-[10px] uppercase tracking-[0.1em] cursor-pointer hover:bg-gray-200 transition-colors"
                 >
                   <Plus size={12} /> Add POS System
                 </button>
               </div>
 
               {stores.map(store => (
-                <div key={store.id} style={{ border: '1px solid #222', padding: 20, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 20 }}>
-                  <div style={{ width: 40, height: 40, background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div key={store.id} className="border border-[#222] p-5 mb-4 flex items-center gap-4 md:gap-5">
+                  <div className="w-10 h-10 bg-[#111] flex items-center justify-center shrink-0">
                     <Store size={16} color="#555" />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, color: '#fff', marginBottom: 4 }}>{store.name}</div>
-                    <div style={{ fontSize: 10, color: '#666', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                      POS: <span style={{ color: '#ccc' }}>{store.pos}</span> &nbsp;&nbsp;&bull;&nbsp;&nbsp; Platforms: <span style={{ color: '#ccc' }}>{store.platforms.join(', ')}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] md:text-[14px] text-white mb-1 truncate">{store.name}</div>
+                    <div className="text-[9px] md:text-[10px] text-[#666] tracking-[0.05em] uppercase truncate">
+                      POS: <span className="text-[#ccc]">{store.pos}</span> <span className="mx-2">&bull;</span> Platforms: <span className="text-[#ccc]">{store.platforms.join(', ')}</span>
                     </div>
                   </div>
-                  <button style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer' }}><Settings size={14} /></button>
+                  <button className="bg-transparent border-none text-[#555] cursor-pointer p-1 shrink-0 hover:text-white transition-colors"><Settings size={14} /></button>
                 </div>
               ))}
             </>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div className="flex flex-col gap-6">
               <div>
-                <label style={{ display: 'block', fontSize: 10, color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Store Name</label>
+                <label className="block text-[10px] text-[#666] uppercase tracking-[0.1em] mb-2">Store Name</label>
                 <input 
                   type="text" 
                   value={newStore.name} 
                   onChange={e => setNewStore({...newStore, name: e.target.value})}
                   placeholder="e.g. Uptown Location"
-                  style={{ width: '100%', background: 'transparent', border: '1px solid #333', color: '#fff', padding: '12px 16px', fontSize: 12 }}
+                  className="w-full bg-transparent border border-[#333] text-white px-4 py-3 text-[12px] focus:outline-none focus:border-[#666] rounded-none"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 10, color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Select POS System</label>
-                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <label className="block text-[10px] text-[#666] uppercase tracking-[0.1em] mb-2">Select POS System</label>
+                <div className="flex gap-3 flex-wrap">
                   {POS_OPTIONS.map(pos => (
                     <button 
                       key={pos}
                       onClick={() => setNewStore({...newStore, pos})}
-                      style={{ 
-                        background: newStore.pos === pos ? '#fff' : 'transparent',
-                        color: newStore.pos === pos ? '#000' : '#888',
-                        border: '1px solid #333',
-                        padding: '10px 16px', fontSize: 11, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em'
-                      }}
+                      className={`border border-[#333] px-4 py-2.5 text-[10px] md:text-[11px] cursor-pointer uppercase tracking-[0.05em] transition-colors rounded-none ${newStore.pos === pos ? 'bg-white text-black' : 'bg-transparent text-[#888]'}`}
                     >
                       {pos}
                     </button>
@@ -100,18 +95,13 @@ export default function StoreManager({ onClose }: { onClose: () => void }) {
 
               {newStore.pos && (
                 <div>
-                  <label style={{ display: 'block', fontSize: 10, color: '#666', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Select Delivery Platforms to Sync</label>
-                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <label className="block text-[10px] text-[#666] uppercase tracking-[0.1em] mb-2">Select Delivery Platforms to Sync</label>
+                  <div className="flex gap-3 flex-wrap">
                     {PLATFORM_OPTIONS.map(plat => (
                       <button 
                         key={plat}
                         onClick={() => togglePlatform(plat)}
-                        style={{ 
-                          background: newStore.platforms.includes(plat) ? '#222' : 'transparent',
-                          color: newStore.platforms.includes(plat) ? '#fff' : '#888',
-                          border: newStore.platforms.includes(plat) ? '1px solid #555' : '1px solid #333',
-                          padding: '10px 16px', fontSize: 11, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em'
-                        }}
+                        className={`px-4 py-2.5 text-[10px] md:text-[11px] cursor-pointer uppercase tracking-[0.05em] transition-colors rounded-none ${newStore.platforms.includes(plat) ? 'bg-[#222] text-white border border-[#555]' : 'bg-transparent text-[#888] border border-[#333]'}`}
                       >
                         {plat}
                       </button>
@@ -120,17 +110,17 @@ export default function StoreManager({ onClose }: { onClose: () => void }) {
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+              <div className="flex flex-col md:flex-row gap-3 mt-4">
                 <button 
                   onClick={saveStore}
                   disabled={!newStore.name || !newStore.pos}
-                  style={{ flex: 1, background: '#fff', color: '#000', border: 'none', padding: 14, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', cursor: 'pointer', opacity: (!newStore.name || !newStore.pos) ? 0.5 : 1 }}
+                  className={`flex-1 bg-white text-black border-none p-3.5 text-[11px] uppercase tracking-[0.1em] cursor-pointer rounded-none ${(!newStore.name || !newStore.pos) ? 'opacity-50' : 'hover:bg-gray-200'}`}
                 >
                   Connect & Sync Menu
                 </button>
                 <button 
                   onClick={() => setIsAdding(false)}
-                  style={{ background: 'transparent', color: '#888', border: '1px solid #333', padding: '14px 24px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', cursor: 'pointer' }}
+                  className="bg-transparent text-[#888] border border-[#333] px-6 py-3.5 text-[11px] uppercase tracking-[0.1em] cursor-pointer rounded-none hover:text-white hover:border-[#555]"
                 >
                   Cancel
                 </button>

@@ -2,7 +2,7 @@ import logging
 import httpx
 import uuid
 import os
-from typing import Dict, Any
+from typing import Dict, Any, List
 from .base import BaseAdapter
 
 logger = logging.getLogger(__name__)
@@ -17,6 +17,11 @@ class SquareAdapter(BaseAdapter):
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json"
         }
+
+    def pull_menu(self, store_id: str = None) -> List[Dict[str, Any]]:
+        """Pull catalog from Square. Returns normalized item list."""
+        logger.info("SquareAdapter: pull_menu not yet implemented for live mode")
+        return []
         
     def create_item(self, item_data: Dict[str, Any]) -> str:
         logger.info(f"SquareAdapter: Creating item {item_data.get('name')}")

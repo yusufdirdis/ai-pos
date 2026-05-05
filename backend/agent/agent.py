@@ -26,12 +26,12 @@ def ensure_platform_connections(db: Session, restaurant_id: int):
             db.add(PlatformConnection(restaurant_id=restaurant_id, platform_name=platform, credentials_secret_arn="mock", is_active=True))
     db.commit()
 
-async def run_agent(db: Session, user_message: str, image_base64: str, background_tasks: BackgroundTasks) -> str:
+async def run_agent(db: Session, user_message: str, image_base64: str, background_tasks: BackgroundTasks, history: str = "") -> str:
     restaurant_id = 1  # Hardcoded for MVP
     ensure_platform_connections(db, restaurant_id)
 
     workflow = AgentWorkflow(db)
-    result = workflow.process_request(restaurant_id, user_message, image_base64)
+    result = workflow.process_request(restaurant_id, user_message, image_base64, history)
     
     if result["status"] == "clarify":
         return result["message"]

@@ -79,7 +79,7 @@ class AIClient:
         import google.generativeai as genai
         genai.configure(api_key=self.settings.GEMINI_API_KEY)
         model = genai.GenerativeModel(
-            "gemini-2.0-flash",
+            "gemini-flash-latest",
             system_instruction=system_prompt
         )
 
@@ -101,7 +101,7 @@ class AIClient:
     def _gemini_embed(self, text: str) -> List[float]:
         import google.generativeai as genai
         genai.configure(api_key=self.settings.GEMINI_API_KEY)
-        result = genai.embed_content(model="models/text-embedding-004", content=text)
+        result = genai.embed_content(model="models/gemini-embedding-2", content=text)
         return result["embedding"]
 
     # ─── OpenAI (Fallback) ─────────────────────────────────────────────────────

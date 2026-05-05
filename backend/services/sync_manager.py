@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from db.models import SyncJob, SyncLog, PlatformConnection, PlatformItemMapping
 from core.adapters.square import SquareAdapter
 from core.adapters.ubereats import UberEatsAdapter
+from core.adapters.doordash import DoorDashAdapter
+from core.adapters.grubhub import GrubhubAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -11,11 +13,15 @@ class SyncManager:
         self.db = db
 
     def get_adapter(self, platform_name: str, credentials_arn: str):
-        if platform_name.lower() == 'square':
+        name = platform_name.lower().replace(" ", "")
+        if name == 'square':
             return SquareAdapter(credentials_arn)
-        elif platform_name.lower() == 'ubereats':
+        elif name == 'ubereats':
             return UberEatsAdapter(credentials_arn)
-        # Future adapters can be added here
+        elif name == 'doordash':
+            return DoorDashAdapter(credentials_arn)
+        elif name == 'grubhub':
+            return GrubhubAdapter(credentials_arn)
         raise ValueError(f"Unsupported platform: {platform_name}")
 
     def sync_item(self, sync_job_id: int, restaurant_id: int, menu_item: dict, action: str, target_platforms: list = None):

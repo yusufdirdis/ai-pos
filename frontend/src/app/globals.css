@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+@source "../src";
 
 * {
   box-sizing: border-box;
@@ -20,6 +20,9 @@ body {
 ::-webkit-scrollbar { width: 2px; }
 ::-webkit-scrollbar-track { background: #000; }
 ::-webkit-scrollbar-thumb { background: #333; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 .divider {
   width: 100%;
